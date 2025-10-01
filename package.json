@@ -1,0 +1,28 @@
+{
+  "name": "crowdfunding-app1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "aes-js": "^4.0.0-beta.5",
+    "dotenv": "^17.2.0",
+    "firebase": "^12.3.0",
+    "micro-eth-signer": "0.14.0",
+    "react-router-dom": "^7.7.0",
+    "tslib": "^2.7.0",
+    "undici-types": "^6.19.8",
+    "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.1.0",
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@nomicfoundation/hardhat-verify": "^2.1.0",
+    "ethers": "^6.15.0",
+    "hardhat": "^2.25.0"
+  },
+  "overrides": {
+    "micro-eth-signer": "0.14.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
