@@ -4,28 +4,33 @@ dotenv.config();
 import express from "express";
 import admin from "firebase-admin";
 import cors from "cors";
-import { fileURLToPath } from "url";
-import path from "path";
 import { ethers } from "ethers";
 import { Storage } from "@google-cloud/storage";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// ✅ FIX: Convert private key properly
+const privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n");
 
-import serviceAccount from "./serviceAccountKey.json" assert { type: "json" };
-
-// Initialize Firebase Admin with serviceAccount and storage bucket
+// ✅ Firebase Initialization (NO JSON FILE)
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET, // Use .env var like crowd-platform-a5dae.appspot.com
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: privateKey,
+    }),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
   });
 }
 
 const db = admin.firestore();
 
+// ✅ Google Cloud Storage (NO key file)
 const storage = new Storage({
-  keyFilename: path.join(__dirname, "serviceAccountKey.json"),
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  credentials: {
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    private_key: privateKey,
+  },
 });
 
 const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
@@ -85,7 +90,6 @@ app.post("/api/campaigns", async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Create campaign on Polygon blockchain (MATIC)
     const tx = await contract.createCampaign(
       title,
       description || "",
@@ -134,7 +138,9 @@ app.post("/api/campaigns/:id/donate", async (req, res) => {
       return res.status(400).json({ error: "Donor and amount are required" });
     }
 
-    const tx = await contract.contribute(campaignId, { value: ethers.parseEther(amount.toString()) });
+    const tx = await contract.contribute(campaignId, {
+      value: ethers.parseEther(amount.toString()),
+    });
     await tx.wait();
 
     const campaignRef = db.collection("campaigns").doc(campaignId);
